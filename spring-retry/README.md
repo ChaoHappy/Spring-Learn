@@ -194,8 +194,64 @@ public Object recover(RetryContext context) throws Exception {
      }
  ```
 
+# 6. Listeners
+
+侦听器在重试时提供附加回调。它们可以用于不同重试之间的各种交叉关注点。
+
+ ## 6.1 添加回调
+
+回调在RetryListener接口中提供：
+
+ ```java
+public class DefaultListenerSupport extends RetryListenerSupport {
+    @Override
+    public <T, E extends Throwable> void close(RetryContext context,
+      RetryCallback<T, E> callback, Throwable throwable) {
+        logger.info("onClose);
+        ...
+        super.close(context, callback, throwable);
+    }
+ 
+    @Override
+    public <T, E extends Throwable> void onError(RetryContext context,
+      RetryCallback<T, E> callback, Throwable throwable) {
+        logger.info("onError"); 
+        ...
+        super.onError(context, callback, throwable);
+    }
+ 
+    @Override
+    public <T, E extends Throwable> boolean open(RetryContext context,
+      RetryCallback<T, E> callback) {
+        logger.info("onOpen);
+        ...
+        return super.open(context, callback);
+    }
+}
+ ```
+
+open和close回调出现在整个重试之前和之后，onError应用于各个RetryCallback调用。
+
+ ## 6.2 注册侦听器 
+
+接下来，我们向RetryTemplate bean注册侦听器（DefaultListenerSupport）：
+
+ ```java
+@Configuration
+public class AppConfig {
+    ...
+ 
+    @Bean
+    public RetryTemplate retryTemplate() {
+        RetryTemplate retryTemplate = new RetryTemplate();
+        ...
+        retryTemplate.registerListener(new DefaultListenerSupport());
+        return retryTemplate;
+    }
+}
+ ```
 
 
-# 6. XML配置
+# 7. XML配置
 
-个人认为 xml配置以后基本会被Spring Boot自动配置所取代，所以这块内容不进行深入学习，后续有需要会再更新。
+后续有需要会再更新。

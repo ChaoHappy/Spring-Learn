@@ -3,10 +3,7 @@ package com.spring.retry.demo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.retry.RecoveryCallback;
-import org.springframework.retry.RetryCallback;
-import org.springframework.retry.RetryContext;
-import org.springframework.retry.RetryPolicy;
+import org.springframework.retry.*;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
@@ -21,6 +18,9 @@ public class MyServiceImplTest {
 
     @Autowired
     MyService myService;
+
+    @Autowired
+    RetryListener retryListener;
 
     @Test
     public void test1() throws SQLException {
@@ -39,6 +39,9 @@ public class MyServiceImplTest {
         FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
         fixedBackOffPolicy.setBackOffPeriod(3000l);
         retryTemplate.setBackOffPolicy(fixedBackOffPolicy);
+
+        // 注册监听器
+        retryTemplate.registerListener(retryListener);
 
         //使用重试
         retryTemplate.execute(new RetryCallback<Object, Throwable>() {
