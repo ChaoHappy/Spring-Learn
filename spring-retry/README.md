@@ -84,6 +84,20 @@ public class MyServiceImpl implements MyService{
 
 如果使用@Retryable时没有任何属性，如果方法因异常而失败，则将尝试最多三次重试，延迟一秒。 
 
+Retryable注解参数：
+
+- value：指定发生的异常进行重试
+- include：和value一样，默认空，当exclude也为空时，所有异常都重试
+- exclude：指定异常不重试，默认空，当include也为空时，所有异常都重试
+- maxAttemps：重试次数，默认3
+- backoff：重试补偿机制，默认没有 
+
+@Backoff 注解 重试补偿策略：
+
+- 不设置参数时，默认使用FixedBackOffPolicy（指定等待时间），重试等待1000ms
+- 设置delay,使用FixedBackOffPolicy（指定等待- - 设置delay和maxDealy时，重试等待在这两个值之间均态分布
+- 设置delay、maxDealy、multiplier，使用 ExponentialBackOffPolicy（指数级重试间隔的实现 ），multiplier即指定延迟倍数，比如delay=5000l,multiplier=2,则第一次重试为5秒，第二次为10秒，第三次为20秒
+
 ## 4.2 @Recover
 
 @Recover注释用于在@Retryable方法因指定的异常而失败时定义单独的恢复方法： 
@@ -99,12 +113,84 @@ public interface MyService {
 
 因此，如果retryService（）方法抛出一个SQLException，将调用recover（）方法。合适的恢复处理程序的第一个参数类型为Throwable（可选）。从失败方法的参数列表中按与失败方法相同的顺序填充后续参数，并使用相同的返回类型。 
  
+## 4.3 总结
+虽然注解使用简便，但是可配置的东西太少，如果想使用spring-retry强大的策略机制，并需定制化RetryTemplate。
+RetryTemplate 对象可以设置重试策略、补偿策略、重试监听等属性。
 
+# 5. RetryTemplate
+
+## 5.1 RetryOperations
+Spring Retry提供RetryOperations接口，该接口提供一组execute（）方法：
+
+ ```java
+public interface RetryOperations {
+   <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback) throws E;
+   
+   <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback)
+           throws E;
+   
+   <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RetryState retryState)
+           throws E, ExhaustedRetryException;
+   
+   <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
+           RetryState retryState) throws E;
+}
+```
+ RetryCallback是execute（）的一个参数，它是一个接口，允许插入失败时需要重试的业务逻辑：
+ ````java
+public interface RetryCallback<T> {
+    T doWithRetry(RetryContext context) throws Throwable;
+}
+
+````
+RecoveryCallback : 当结束时会调用recover（）方法，RetryOperations可以将控制权传递给另一个回调，称为RecoveryCallback。
+
+```java
+@Override
+public Object recover(RetryContext context) throws Exception {
+    System.out.println("testRetryTemplate=========：recover");
+    return null;
+}
+```
+
+
+ ## 5.2 RetryTemplate使用
+ RetryTemplate是RetryOperations的实现。让我们简单使用下吧：
+ ```java
+ @Test
+     public void testRetryTemplate() throws Throwable {
+         RetryTemplate retryTemplate = new RetryTemplate();
+         //设置重试策略 最大重试次数2次（什么时候重试）,默认遇到Exception异常时重试。
+         SimpleRetryPolicy retryPolicy = new SimpleRetryPolicy();
+         retryPolicy.setMaxAttempts(2);
+         retryTemplate.setRetryPolicy(retryPolicy);
  
+         // 设置重试间隔时间 3S
+         FixedBackOffPolicy fixedBackOffPolicy = new FixedBackOffPolicy();
+         fixedBackOffPolicy.setBackOffPeriod(3000l);
+         retryTemplate.setBackOffPolicy(fixedBackOffPolicy);
  
+         //使用重试
+         retryTemplate.execute(new RetryCallback<Object, Throwable>() {
  
+             @Override
+             public Object doWithRetry(RetryContext context) throws Throwable {
+                 myService.retryService("testRetryTemplate");
+                 return null;
+             }
+         }, new RecoveryCallback<Object>() {
  
+             @Override
+             public Object recover(RetryContext context) throws Exception {
+                 System.out.println("testRetryTemplate=========：recover");
+                 return null;
+             }
+         });
+     }
+```
  
+ # 6. XML配置
+ xml配置以后基本会被Spring Boot自动配置所取代，所以这块内容不进行具体学习，后续有需要会再更新。
  
  
  

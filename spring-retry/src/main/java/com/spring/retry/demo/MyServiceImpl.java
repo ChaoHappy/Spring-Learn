@@ -10,11 +10,11 @@ import java.sql.SQLException;
 public class MyServiceImpl implements MyService{
 
     public void retryService(String sql) throws SQLException {
-        System.out.println("retryService");
+        System.out.println("retryService："+sql);
         throw new SQLException();
     }
 
     public void recover(SQLException e, String sql) {
-        System.out.println("recover");
+        System.out.println("recover："+sql);
     }
 }
