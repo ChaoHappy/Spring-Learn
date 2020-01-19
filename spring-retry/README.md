@@ -1,4 +1,3 @@
-
 [代码地址](https://github.com/ChaoHappy/spring-learn/tree/master/spring-retry)
 
 # spring-retry
@@ -65,13 +64,14 @@ public class MyServiceImpl implements MyService{
     }
 }
 ```
- # 4. 使用Retry注解
+# 4. 使用Retry注解
+
  我们可以使用注释进行方法调用，以便在失败时重试。 
- 
- ## 4.1 @Retryable
- 
+
+## 4.1 @Retryable
+
  要向方法添加重试功能，可以使用@Retryable： 
- 
+
  ```java
  @Service
  public interface MyService {
@@ -115,7 +115,7 @@ public interface MyService {
 ```
 
 因此，如果retryService（）方法抛出一个SQLException，将调用recover（）方法。合适的恢复处理程序的第一个参数类型为Throwable（可选）。从失败方法的参数列表中按与失败方法相同的顺序填充后续参数，并使用相同的返回类型。 
- 
+
 ## 4.3 总结
 虽然注解使用简便，但是可配置的东西太少，如果想使用spring-retry强大的策略机制，并需定制化RetryTemplate。
 RetryTemplate 对象可以设置重试策略、补偿策略、重试监听等属性。
@@ -138,14 +138,14 @@ public interface RetryOperations {
    <T, E extends Throwable> T execute(RetryCallback<T, E> retryCallback, RecoveryCallback<T> recoveryCallback,
            RetryState retryState) throws E;
 }
-```
+ ```
  RetryCallback是execute（）的一个参数，它是一个接口，允许插入失败时需要重试的业务逻辑：
  ````java
 public interface RetryCallback<T> {
     T doWithRetry(RetryContext context) throws Throwable;
 }
 
-````
+ ````
 RecoveryCallback : 当结束时会调用recover（）方法，RetryOperations可以将控制权传递给另一个回调，称为RecoveryCallback。
 
 ```java
@@ -157,7 +157,9 @@ public Object recover(RetryContext context) throws Exception {
 ```
 
 
- ## 5.2 RetryTemplate使用
+
+## 5.2 RetryTemplate使用
+
  RetryTemplate是RetryOperations的实现。让我们简单使用下吧：
  ```java
  @Test
@@ -190,13 +192,10 @@ public Object recover(RetryContext context) throws Exception {
              }
          });
      }
-```
- 
- # 6. XML配置
- xml配置以后基本会被Spring Boot自动配置所取代，所以这块内容不进行具体学习，后续有需要会再更新。
- 
- 
- 
- 
- 
- 
+ ```
+
+
+
+# 6. XML配置
+
+个人认为 xml配置以后基本会被Spring Boot自动配置所取代，所以这块内容不进行深入学习，后续有需要会再更新。
