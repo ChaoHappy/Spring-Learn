@@ -15,6 +15,7 @@ public class MyServiceImpl implements MyService{
     }
 
     public void recover(SQLException e, String sql) {
-        System.out.println("recover："+sql);
+        System.out.println("recover："+sql
+        );
     }
 }
