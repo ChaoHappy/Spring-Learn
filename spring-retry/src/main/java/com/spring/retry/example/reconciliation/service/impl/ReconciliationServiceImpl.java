@@ -1,18 +1,22 @@
 package com.spring.retry.example.reconciliation.service.impl;
 
 import com.spring.retry.example.reconciliation.exception.BizException;
+import com.spring.retry.example.reconciliation.exception.FileException;
 import com.spring.retry.example.reconciliation.exception.NetWorkException;
 import com.spring.retry.example.reconciliation.exception.ValidateException;
 import com.spring.retry.example.reconciliation.service.ReconciliationService;
 import com.spring.retry.example.reconciliation.task.AbstractRetryTask;
 import com.spring.retry.example.reconciliation.task.ReconRetryTask;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.ContextLoader;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.ServletContext;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -23,10 +27,12 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
     /**
      * 重试任务队列，执行失败的任务将会加入到此队列中，等待被重试。
-     * 这是一个优先队列，泛型是 {@link AbstractRetryTask}。
-     * 这个类实现了 {@link Comparable#compareTo(Object)} 方法，比较方式是下次执行时间，
      */
     public static final PriorityBlockingQueue<AbstractRetryTask> RETRY_TASK_QUEUE = new PriorityBlockingQueue<AbstractRetryTask>();
+
+
+    @Autowired
+    private ReconciliationService reconciliationService;
 
     /**
      * 对账
@@ -34,7 +40,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
      * @return
      */
     @Override
-    public void validateTradeResult(String reconDate) {
+    public Boolean validateTradeResult(String reconDate) {
         System.out.println("准备对账："+reconDate);
         //1、获取对账文件数据
         List<Map<String, String>> recons = listRecons(reconDate);
@@ -43,14 +49,34 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         //3、发起对账
         validateTradeResult(recons);
         System.out.println("对账结束："+reconDate);
+        return true;
     }
 
 
+    /**
+     * 对账失败会将失败的任务放到队列中
+     * @param reconDate
+     * @return
+     */
     @Override
-    public void recover(NetWorkException e, String reconDate) {
-        ReconRetryTask task = new ReconRetryTask(reconDate);
+    public Boolean recover(NetWorkException e,String reconDate) {
+        ReconRetryTask task = new ReconRetryTask(reconDate,reconciliationService);
         RETRY_TASK_QUEUE.add(task);
-        System.out.println("recover");
+        System.out.println("对账失败，任务已放到队列中");
+        return false;
+    }
+
+    /**
+     * 对账失败会将失败的任务放到队列中
+     * @param reconDate
+     * @return
+     */
+    @Override
+    public Boolean recover(FileException e,String reconDate) {
+        ReconRetryTask task = new ReconRetryTask(reconDate,reconciliationService);
+        RETRY_TASK_QUEUE.add(task);
+        System.out.println("对账失败，任务已放到队列中");
+        return false;
     }
 
 
@@ -86,11 +112,11 @@ public class ReconciliationServiceImpl implements ReconciliationService {
      */
     private List<Map<String,String>> readReconFile(String reconDate){
         if(Objects.equals(reconDate,"2020-02-20")){
-            throw new NetWorkException("读取对账文件失败");
+            throw new FileException("读取对账文件失败");
         }
         List<Map<String,String>> recons= new ArrayList<Map<String,String>>();
         Map<String,String> map = new HashMap<String,String>();
-        map.put("date","reconDate");
+        map.put("date",reconDate);
         recons.add(map);
         return recons;
     }

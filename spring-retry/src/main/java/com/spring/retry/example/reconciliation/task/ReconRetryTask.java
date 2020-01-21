@@ -1,19 +1,23 @@
 package com.spring.retry.example.reconciliation.task;
 
+import com.spring.retry.example.reconciliation.service.ReconciliationService;
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class ReconRetryTask extends AbstractRetryTask {
 
     private String reconDate;
 
-    @Override
-    public void run() {
-        System.out.println("执行ReconRetryTask run()方法");
+    private ReconciliationService reconciliationService;
+
+    public ReconRetryTask(String reconDate, ReconciliationService reconciliationService) {
+        this.reconDate = reconDate;
+        this.reconciliationService = reconciliationService;
     }
 
-
-
-
-    public ReconRetryTask(String reconDate) {
-        this.reconDate = reconDate;
+    @Override
+    public void run() {
+        System.out.println("重试对账方法");
+        reconciliationService.validateTradeResult(reconDate);
     }
 
     public String getReconDate() {
@@ -22,6 +26,14 @@ public class ReconRetryTask extends AbstractRetryTask {
 
     public void setReconDate(String reconDate) {
         this.reconDate = reconDate;
+    }
+
+    public ReconciliationService getReconciliationService() {
+        return reconciliationService;
+    }
+
+    public void setReconciliationService(ReconciliationService reconciliationService) {
+        this.reconciliationService = reconciliationService;
     }
 
     @Override

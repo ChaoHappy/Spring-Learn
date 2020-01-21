@@ -17,14 +17,17 @@ public class ReconciliationTest {
 
     /**
      * 测试对账
-     * 1、对账日期 2020-02-20/2020-02-22 网络异常
-     * 2、对账日期 2020-02-21 格式验证异常
-     * 3、对账日期 2020-02-23 业务异常
+     * 1、对账日期 2020-02-22 网络异常
+     * 2、对账日期 2020-02-20 文件异常
+     * 3、对账日期 2020-02-21 格式验证异常
+     * 4、对账日期 2020-02-23 业务异常
      */
     @Test
-    public void testReconciliation(){
-        String reconDate = "2020-02-21";
-        reconciliationService.validateTradeResult(reconDate);
-        System.out.println("等待数量："+ReconciliationServiceImpl.RETRY_TASK_QUEUE.size());;
+    public void testReconciliation() throws InterruptedException {
+        reconciliationService.validateTradeResult("2020-02-23");
+//        reconciliationService.validateTradeResult("2020-02-22");
+        Thread.sleep(50000);
+        System.out.println("----------------------------");
+
     }
 }
