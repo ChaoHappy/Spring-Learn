@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_4_0.xsd" version="4.0">
+    <display-name>springmvc-learning-example</display-name>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>default.html</welcome-file>
+        <welcome-file>default.htm</welcome-file>
+        <welcome-file>default.jsp</welcome-file>
+    </welcome-file-list>
+    <context-param>
+　　	<param-name>contextConfigLocation</param-name>
+　　	<param-value>
+            classpath:applicationContext.xml
+        </param-value>
+    </context-param>
+    <listener>
+        　　<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+
+<!--    <context-param>
+        <param-name>webAppRootKey</param-name>
+        <param-value>ebop-server.root</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.util.WebAppRootListener</listener-class>
+    </listener>-->
+
+    <servlet>
+        <!-- 默认情况下DispatcherServlet加载时会从基于这个servlet名字的XML文件中加载Spring应用上下文，例如：spitter-servlet.xml -->
+        <servlet-name>spitter</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!-- SpringMVC的配置文件所在的位置和名称 -->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <!--框架进行转发规则的定义文件-->
+            <param-value>classpath:spitter-servlet.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>spitter</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+</web-app>
