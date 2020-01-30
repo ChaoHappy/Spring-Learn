@@ -6,8 +6,9 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="spring-mvc" />
         <module name="spring-retry" />
+        <module name="spring-mvc" />
+        <module name="spring-security" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="8" />
