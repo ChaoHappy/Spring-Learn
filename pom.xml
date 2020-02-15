@@ -79,6 +79,7 @@
         <module>spring-retry</module>
         <module>spring-mvc</module>
         <module>spring-security</module>
+        <module>spring-activemq</module>
     </modules>
 
 
